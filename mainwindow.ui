@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>768</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>机器人操纵界面</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <!-- 显示屏区域 -->
+    <item>
+     <widget class="QGroupBox" name="displayGroupBox">
+      <property name="title">
+       <string>显示屏</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <!-- 图传窗口1 -->
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="video1GroupBox">
+         <property name="title">
+          <string>图传1</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="video1Label">
+            <property name="text">
+             <string>图传1显示区域</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="video1SourceComboBox">
+            <item>
+             <property name="text">
+              <string>摄像头1</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>摄像头2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>摄像头3</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <!-- 图传窗口2 -->
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="video2GroupBox">
+         <property name="title">
+          <string>图传2</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="video2Label">
+            <property name="text">
+             <string>图传2显示区域</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="video2SourceComboBox">
+            <item>
+             <property name="text">
+              <string>摄像头1</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>摄像头2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>摄像头3</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <!-- GPS地图窗口 -->
+       <item row="0" column="2">
+        <widget class="QGroupBox" name="gpsGroupBox">
+         <property name="title">
+          <string>GPS地图</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QLabel" name="gpsMapLabel">
+            <property name="text">
+             <string>GPS地图显示区域</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <!-- 按键区域 -->
+    <item>
+     <widget class="QGroupBox" name="controlGroupBox">
+      <property name="title">
+       <string>控制面板</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="startButton">
+         <property name="text">
+          <string>启动</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="stopButton">
+         <property name="text">
+          <string>停止</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="emergencyButton">
+         <property name="text">
+          <string>紧急停止</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="calibrateButton">
+         <property name="text">
+          <string>校准</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="settingsButton">
+         <property name="text">
+          <string>设置</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="connectButton">
+         <property name="text">
+          <string>连接</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <!-- 状态显示栏 -->
+    <item>
+     <widget class="QGroupBox" name="statusGroupBox">
+      <property name="title">
+       <string>状态显示</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="statusLabel">
+         <property name="text">
+          <string>状态: 未连接</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="batteryLabel">
+         <property name="text">
+          <string>电量: 100%</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="signalLabel">
+         <property name="text">
+          <string>信号: 良好</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
