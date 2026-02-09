@@ -19,21 +19,25 @@ public:
     ~MainWindow();
 
 private slots:
-    void onVideo1SourceChanged(int index);
-    void onVideo2SourceChanged(int index);
-    void onStartButtonClicked();
-    void onStopButtonClicked();
-    void onEmergencyButtonClicked();
-    void onCalibrateButtonClicked();
-    void onSettingsButtonClicked();
-    void onConnectButtonClicked();
+    // 位置姿态控制
+    void onCartesianButtonClicked();
+    void onPtpButtonClicked();
+    
+    // 手柄控制
+    void onJoystickEnableCheckBoxClicked(bool checked);
+    void onZForwardButtonPressed();
+    void onZForwardButtonReleased();
+    void onZBackwardButtonPressed();
+    void onZBackwardButtonReleased();
+    
+    // 视觉识别
+    void onAlignButtonClicked();
+    
+    // 状态更新
     void updateStatusBar();
 
 private:
     Ui::MainWindow *ui;
-    QLabel *batteryLabel;
-    QLabel *signalLabel;
-    QLabel *gpsLabel;
-    QLabel *modeLabel;
+    QLabel *controlStatusLabel;
 };
 #endif // MAINWINDOW_H

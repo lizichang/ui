@@ -10,28 +10,24 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     
-    // 添加状态栏标签
-    batteryLabel = new QLabel("电池: 100%");
-    signalLabel = new QLabel("信号: 良好");
-    gpsLabel = new QLabel("GPS: 定位中");
-    modeLabel = new QLabel("模式: 手动");
-    
-    ui->statusbar->addPermanentWidget(batteryLabel);
-    ui->statusbar->addPermanentWidget(signalLabel);
-    ui->statusbar->addPermanentWidget(gpsLabel);
-    ui->statusbar->addPermanentWidget(modeLabel);
+    // 初始化控制状态栏
+    controlStatusLabel = new QLabel("手柄操作状态: 就绪");
+    ui->statusbar->addPermanentWidget(controlStatusLabel);
     
     // 连接信号槽
-    connect(ui->video1SourceComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onVideo1SourceChanged);
-    connect(ui->video2SourceComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onVideo2SourceChanged);
+    // 位置姿态控制
+    connect(ui->cartesianButton, &QPushButton::clicked, this, &MainWindow::onCartesianButtonClicked);
+    connect(ui->ptpButton, &QPushButton::clicked, this, &MainWindow::onPtpButtonClicked);
     
-    // 连接按钮信号
-    connect(ui->startButton, &QPushButton::clicked, this, &MainWindow::onStartButtonClicked);
-    connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::onStopButtonClicked);
-    connect(ui->emergencyButton, &QPushButton::clicked, this, &MainWindow::onEmergencyButtonClicked);
-    connect(ui->calibrateButton, &QPushButton::clicked, this, &MainWindow::onCalibrateButtonClicked);
-    connect(ui->settingsButton, &QPushButton::clicked, this, &MainWindow::onSettingsButtonClicked);
-    connect(ui->connectButton, &QPushButton::clicked, this, &MainWindow::onConnectButtonClicked);
+    // 手柄控制
+    connect(ui->joystickEnableCheckBox, &QCheckBox::clicked, this, &MainWindow::onJoystickEnableCheckBoxClicked);
+    connect(ui->zForwardButton, &QPushButton::pressed, this, &MainWindow::onZForwardButtonPressed);
+    connect(ui->zForwardButton, &QPushButton::released, this, &MainWindow::onZForwardButtonReleased);
+    connect(ui->zBackwardButton, &QPushButton::pressed, this, &MainWindow::onZBackwardButtonPressed);
+    connect(ui->zBackwardButton, &QPushButton::released, this, &MainWindow::onZBackwardButtonReleased);
+    
+    // 视觉识别
+    connect(ui->alignButton, &QPushButton::clicked, this, &MainWindow::onAlignButtonClicked);
     
     // 模拟数据更新
     QTimer *timer = new QTimer(this);
@@ -44,78 +40,68 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onVideo1SourceChanged(int index)
+// 位置姿态控制槽函数
+void MainWindow::onCartesianButtonClicked()
 {
-    QString source = ui->video1SourceComboBox->currentText();
-    qDebug() << "图传1源切换为:" << source;
-    ui->video1Label->setText("图传1: " + source);
+    qDebug() << "直线运动 (Cartesian) 按钮点击";
+    ui->statusbar->showMessage("执行笛卡尔直线路径规划...", 2000);
 }
 
-void MainWindow::onVideo2SourceChanged(int index)
+void MainWindow::onPtpButtonClicked()
 {
-    QString source = ui->video2SourceComboBox->currentText();
-    qDebug() << "图传2源切换为:" << source;
-    ui->video2Label->setText("图传2: " + source);
+    qDebug() << "关节规划 (PTP) 按钮点击";
+    ui->statusbar->showMessage("执行关节空间路径规划...", 2000);
 }
 
-void MainWindow::onStartButtonClicked()
+// 手柄控制槽函数
+void MainWindow::onJoystickEnableCheckBoxClicked(bool checked)
 {
-    qDebug() << "启动按钮点击";
-    ui->statusbar->showMessage("机器人启动中...", 2000);
+    qDebug() << "手柄激活状态: " << checked;
+    ui->statusbar->showMessage(checked ? "手柄已激活" : "手柄已禁用", 2000);
+    ui->controlStatusLabel->setText(checked ? "手柄操作状态: 已激活" : "手柄操作状态: 就绪");
 }
 
-void MainWindow::onStopButtonClicked()
+void MainWindow::onZForwardButtonPressed()
 {
-    qDebug() << "停止按钮点击";
-    ui->statusbar->showMessage("机器人停止中...", 2000);
+    qDebug() << "前进 (LT) 按钮按下";
+    ui->statusbar->showMessage("Z轴前进...", 1000);
 }
 
-void MainWindow::onEmergencyButtonClicked()
+void MainWindow::onZForwardButtonReleased()
 {
-    qDebug() << "紧急停止按钮点击";
-    ui->statusbar->showMessage("紧急停止激活", 2000);
+    qDebug() << "前进 (LT) 按钮释放";
+    ui->statusbar->showMessage("Z轴停止", 1000);
 }
 
-void MainWindow::onCalibrateButtonClicked()
+void MainWindow::onZBackwardButtonPressed()
 {
-    qDebug() << "校准按钮点击";
-    ui->statusbar->showMessage("开始校准...", 2000);
+    qDebug() << "后退 (RT) 按钮按下";
+    ui->statusbar->showMessage("Z轴后退...", 1000);
 }
 
-void MainWindow::onSettingsButtonClicked()
+void MainWindow::onZBackwardButtonReleased()
 {
-    qDebug() << "设置按钮点击";
-    ui->statusbar->showMessage("打开设置界面", 2000);
+    qDebug() << "后退 (RT) 按钮释放";
+    ui->statusbar->showMessage("Z轴停止", 1000);
 }
 
-void MainWindow::onConnectButtonClicked()
+// 视觉识别槽函数
+void MainWindow::onAlignButtonClicked()
 {
-    qDebug() << "连接按钮点击";
-    ui->statusbar->showMessage("尝试连接机器人...", 2000);
+    qDebug() << "执行对准按钮点击";
+    ui->statusbar->showMessage("正在执行视觉对准...", 2000);
+    ui->recognitionResultLabel->setText("正在执行对准...");
 }
 
+// 状态更新槽函数
 void MainWindow::updateStatusBar()
 {
-    // 模拟数据更新
-    static int battery = 100;
-    static int signalStrength = 95;
-    static bool gpsFixed = false;
-    static QString modes[] = {"手动", "自动", "半自动"};
-    static int modeIndex = 0;
+    // 模拟控制状态更新
+    static QString statuses[] = {"就绪", "运行中", "接近奇异点", "碰撞警告"};
+    static int statusIndex = 0;
     
-    battery--;
-    if (battery < 0) battery = 100;
-    
-    signalStrength = (signalStrength + 1) % 100;
-    if (signalStrength < 30) signalStrength = 80;
-    
-    if (battery % 10 == 0) {
-        gpsFixed = !gpsFixed;
-        modeIndex = (modeIndex + 1) % 3;
+    if (ui->joystickEnableCheckBox->isChecked()) {
+        statusIndex = (statusIndex + 1) % 4;
+        ui->controlStatusLabel->setText(QString("手柄操作状态: %1").arg(statuses[statusIndex]));
     }
-    
-    batteryLabel->setText(QString("电池: %1%").arg(battery));
-    signalLabel->setText(QString("信号: %1%").arg(signalStrength));
-    gpsLabel->setText(gpsFixed ? "GPS: 已定位" : "GPS: 定位中");
-    modeLabel->setText(QString("模式: %1").arg(modes[modeIndex]));
 }
