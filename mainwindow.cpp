@@ -50,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
     // 安全设置
     connect(ui->emergencyButton, &QPushButton::clicked, this, &MainWindow::onEmergencyButtonClicked);
     connect(ui->collisionCheckBox, &QCheckBox::clicked, this, &MainWindow::onCollisionCheckBoxClicked);
+    connect(ui->workAreaLimitCheckBox, &QCheckBox::clicked, this, &MainWindow::onWorkAreaLimitCheckBoxClicked);
+    connect(ui->autoReturnCheckBox, &QCheckBox::clicked, this, &MainWindow::onAutoReturnCheckBoxClicked);
     
     // 视觉识别
     connect(ui->nutRecognitionButton, &QPushButton::clicked, this, &MainWindow::onNutRecognitionButtonClicked);
@@ -180,21 +182,36 @@ void MainWindow::onAlignButtonClicked()
 // 模式切换槽函数
 void MainWindow::onManualModeButtonClicked()
 {
-    qDebug() << "手动模式按钮点击";
+    // 确保只有手动模式被选中
+    ui->manualModeButton->setChecked(true);
+    ui->autoModeButton->setChecked(false);
+    ui->semiautoModeButton->setChecked(false);
+    
+    qDebug() << "切换到手动模式";
     ui->statusbar->showMessage("切换到手动模式", 2000);
     ui->systemStatusLabel->setText("系统状态: 手动模式");
 }
 
 void MainWindow::onAutoModeButtonClicked()
 {
-    qDebug() << "自动模式按钮点击";
+    // 确保只有自动模式被选中
+    ui->manualModeButton->setChecked(false);
+    ui->autoModeButton->setChecked(true);
+    ui->semiautoModeButton->setChecked(false);
+    
+    qDebug() << "切换到自动模式";
     ui->statusbar->showMessage("切换到自动模式", 2000);
     ui->systemStatusLabel->setText("系统状态: 自动模式");
 }
 
 void MainWindow::onSemiautoModeButtonClicked()
 {
-    qDebug() << "半自动模式按钮点击";
+    // 确保只有半自动模式被选中
+    ui->manualModeButton->setChecked(false);
+    ui->autoModeButton->setChecked(false);
+    ui->semiautoModeButton->setChecked(true);
+    
+    qDebug() << "切换到半自动模式";
     ui->statusbar->showMessage("切换到半自动模式", 2000);
     ui->systemStatusLabel->setText("系统状态: 半自动模式");
 }
@@ -239,6 +256,18 @@ void MainWindow::onCollisionCheckBoxClicked(bool checked)
 {
     qDebug() << "碰撞检测状态: " << checked;
     ui->statusbar->showMessage(checked ? "碰撞检测已启用" : "碰撞检测已禁用", 2000);
+}
+
+void MainWindow::onWorkAreaLimitCheckBoxClicked(bool checked)
+{
+    qDebug() << "工作区域限制状态: " << checked;
+    ui->statusbar->showMessage(checked ? "工作区域限制已启用" : "工作区域限制已禁用", 2000);
+}
+
+void MainWindow::onAutoReturnCheckBoxClicked(bool checked)
+{
+    qDebug() << "超出自动返回状态: " << checked;
+    ui->statusbar->showMessage(checked ? "超出自动返回已启用" : "超出自动返回已禁用", 2000);
 }
 
 // 视觉识别槽函数
@@ -321,7 +350,7 @@ void MainWindow::applyDarkTheme()
         
         QWidget {
             background-color: #1E1E1E;
-            color: #E0E0E0;
+            color: #FFFFFF;
             font-family: "Microsoft YaHei", "SimHei", Arial;
             font-size: 10pt;
         }

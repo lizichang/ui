@@ -42,6 +42,8 @@ private slots:
     // 安全设置
     void onEmergencyButtonClicked();
     void onCollisionCheckBoxClicked(bool checked);
+    void onWorkAreaLimitCheckBoxClicked(bool checked);
+    void onAutoReturnCheckBoxClicked(bool checked);
     
     // 视觉识别
     void onNutRecognitionButtonClicked();

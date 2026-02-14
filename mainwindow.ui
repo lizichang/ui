@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>768</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,27 +36,39 @@
       <property name="title">
        <string>控制区域</string>
       </property>
+      <property name="minimumSize">
+       <size>
+        <width>420</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>400</width>
+        <width>480</width>
         <height>16777215</height>
        </size>
       </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
-        <number>10</number>
+        <number>6</number>
        </property>
        <property name="leftMargin">
-        <number>12</number>
+        <number>8</number>
        </property>
        <property name="topMargin">
-        <number>18</number>
+        <number>10</number>
        </property>
        <property name="rightMargin">
-        <number>12</number>
+        <number>8</number>
        </property>
        <property name="bottomMargin">
-        <number>12</number>
+        <number>8</number>
        </property>
        <!-- 模式切换 -->
        <item>
@@ -66,19 +78,19 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="spacing">
-           <number>8</number>
+           <number>4</number>
           </property>
           <property name="leftMargin">
-           <number>12</number>
+           <number>8</number>
           </property>
           <property name="topMargin">
-           <number>18</number>
+           <number>8</number>
           </property>
           <property name="rightMargin">
-           <number>12</number>
+           <number>8</number>
           </property>
           <property name="bottomMargin">
-           <number>12</number>
+           <number>8</number>
           </property>
           <item>
            <widget class="QPushButton" name="manualModeButton">
@@ -211,17 +223,29 @@
            </widget>
           </item>
           <!-- 执行算法选择 -->
-          <item row="6" column="0" colspan="2">
+          <item row="0" column="2" rowspan="3">
            <widget class="QPushButton" name="cartesianButton">
             <property name="text">
-             <string>直线运动 (Cartesian)</string>
+             <string>直线运动</string>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>48</height>
+             </size>
             </property>
            </widget>
           </item>
-          <item row="7" column="0" colspan="2">
+          <item row="3" column="2" rowspan="3">
            <widget class="QPushButton" name="ptpButton">
             <property name="text">
-             <string>关节规划 (PTP)</string>
+             <string>关节规划</string>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>48</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -241,14 +265,14 @@
            <widget class="QWidget" name="joystickXY">
             <property name="minimumSize">
              <size>
-              <width>200</width>
-              <height>200</height>
+              <width>120</width>
+              <height>120</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>200</width>
-              <height>200</height>
+              <width>120</width>
+              <height>120</height>
              </size>
             </property>
            </widget>
@@ -257,6 +281,21 @@
           <!-- 中间激活手柄和Z轴控制 -->
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="spacing">
+             <number>4</number>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
+            <property name="topMargin">
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
+            </property>
+            <property name="bottomMargin">
+             <number>4</number>
+            </property>
             <!-- 激活勾选框 -->
             <item>
              <widget class="QCheckBox" name="joystickEnableCheckBox">
@@ -281,13 +320,13 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="zBackwardButton">
-              <property name="text">
-               <string>后退 (RT)</string>
-              </property>
-             </widget>
-            </item>
+          <item>
+           <widget class="QPushButton" name="zBackwardButton">
+            <property name="text">
+             <string>后退 (RT)</string>
+            </property>
+           </widget>
+          </item>
            </layout>
           </item>
           
@@ -296,14 +335,14 @@
            <widget class="QWidget" name="joystickYawPitch">
             <property name="minimumSize">
              <size>
-              <width>200</width>
-              <height>200</height>
+              <width>120</width>
+              <height>120</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>200</width>
-              <height>200</height>
+              <width>120</width>
+              <height>120</height>
              </size>
             </property>
            </widget>
@@ -363,34 +402,6 @@
         </widget>
        </item>
        
-       <!-- 安全设置 -->
-       <item>
-        <widget class="QGroupBox" name="safetyGroupBox">
-         <property name="title">
-          <string>安全设置</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QPushButton" name="emergencyButton">
-            <property name="text">
-             <string>紧急停止</string>
-            </property>
-            <property name="styleSheet">
-             <string>background-color: red; color: white;</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="collisionCheckBox">
-            <property name="text">
-             <string>碰撞检测</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       
        <!-- 控制状态栏 -->
        <item>
         <widget class="QGroupBox" name="statusGroupBox">
@@ -415,6 +426,20 @@
          </layout>
         </widget>
        </item>
+       <!-- 垂直填充 -->
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </item>
@@ -424,6 +449,12 @@
      <widget class="QGroupBox" name="visionGroupBox">
       <property name="title">
        <string>视觉识别回传</string>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <!-- 识别模式切换 -->
@@ -469,9 +500,15 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>640</width>
-           <height>480</height>
+           <width>560</width>
+           <height>315</height>
           </size>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>2</verstretch>
+          </sizepolicy>
          </property>
         </widget>
        </item>
@@ -487,6 +524,12 @@
            <widget class="QLabel" name="recognitionResultLabel">
             <property name="text">
              <string>识别结果将显示在这里</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
            </widget>
           </item>
@@ -580,6 +623,124 @@
           </item>
          </layout>
         </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    
+    <!-- 右侧安全设置区域 -->
+    <item>
+     <widget class="QGroupBox" name="safetyGroupBox">
+      <property name="title">
+       <string>安全设置</string>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>180</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>220</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="emergencyButton">
+         <property name="text">
+          <string>紧急停止</string>
+         </property>
+         <property name="styleSheet">
+          <string>background-color: red; color: white; font-weight: bold; padding: 10px;</string>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="collisionCheckBox">
+         <property name="text">
+          <string>碰撞检测</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="workAreaGroupBox">
+         <property name="title">
+          <string>工作区域</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="leftMargin">
+           <number>8</number>
+          </property>
+          <property name="topMargin">
+           <number>8</number>
+          </property>
+          <property name="rightMargin">
+           <number>8</number>
+          </property>
+          <property name="bottomMargin">
+           <number>8</number>
+          </property>
+          <item>
+           <widget class="QCheckBox" name="workAreaLimitCheckBox">
+            <property name="text">
+             <string>启用限制</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="autoReturnCheckBox">
+            <property name="text">
+             <string>超出自动返回</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
