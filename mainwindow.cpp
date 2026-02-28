@@ -7,11 +7,21 @@
 #include <QDoubleValidator>
 #include <QIntValidator>
 
+#include "RosWorker.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // 启动 ROS 后台线程
+    rosWorker = new RosWorker();
+    rosWorker->start();
+
+    // 虚拟手柄定时器
+    joyTimer = new QTimer(this);
+    joyTimer->setInterval(20); // 20ms
     
     // 设置视觉识别显示区域的图片
     QPixmap pixmap(":/sample2.png");
@@ -37,10 +47,6 @@ MainWindow::MainWindow(QWidget *parent)
     
     // 设置输入验证
     setupInputValidation();
-    
-    // 初始化控制状态栏
-    controlStatusLabel = new QLabel("手柄操作状态: 就绪");
-    ui->statusbar->addPermanentWidget(controlStatusLabel);
     
     // 连接信号槽
     // 模式切换
@@ -80,10 +86,70 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->recordButton, &QPushButton::clicked, this, &MainWindow::onRecordButtonClicked);
     connect(ui->cameraSourceComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onCameraSourceComboBoxCurrentIndexChanged);
     
-    // 模拟数据更新
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &MainWindow::updateStatusBar);
-    timer->start(1000); // 每秒更新一次
+    // 连接 ROS 状态更新信号到槽函数
+    connect(rosWorker, &RosWorker::statusUpdated, this, 
+        [this](QString target, QString msg, int code) 
+        {
+            qDebug() << "Received status update from ROS:" << target << msg << code;
+            
+            QLabel* targetLabel = nullptr;
+
+            // 路由到具体的 QLabel
+            
+            if (target == "VISION_STATUS") {   // 更新视觉识别结果文本框
+                targetLabel = ui->recognitionResultLabel;
+            } else if (target == "SYSTEM_STATUS") {   // 更新左下角系统状态
+                targetLabel = ui->systemStatusLabel;
+            } else if (target == "JOY_STATUS") {   // 更新手柄操作状态
+                targetLabel = ui->joyStatusLabel;  
+            } else if (target == "VISION_TARGET") {   // 更新目标指示器
+                targetLabel = ui->targetIndexLabel;
+            }
+            
+            QString colorName = "white"; // 默认颜色
+            if (code == -1) {
+                colorName = "#FF4C4C"; // 亮红色
+            } else if (code == 2) {
+                colorName = "#FFD700"; // 金黄色
+            } else if (code == 1) {
+                colorName = "#00FF00"; // 亮绿色
+            }
+
+            if (target == "PLAN_SERVER_FINISHED")  // 规划完成
+            {   
+                ui->joystickEnableCheckBox->setEnabled(true);  // 规划完成后恢复手柄控制
+                ui->cartesianButton->setEnabled(true); // 规划完成后恢复按钮
+                ui->ptpButton->setEnabled(true);
+            } else {
+                // 用 HTML 标签包裹文字
+                QString richText = QString("<font color='%1'>%2</font>").arg(colorName).arg(msg);
+                
+                targetLabel->setText(richText);
+            }
+        });
+    
+
+    // 连接摇杆定时器信号到槽函数
+    connect(joyTimer, &QTimer::timeout, this, [this]() {
+        // 获取摇杆输入
+        float left_x = ui->joystickXY->getOutX();
+        float left_y = ui->joystickXY->getOutY();
+        float right_x = ui->joystickYawPitch->getOutX();
+        float right_y = ui->joystickYawPitch->getOutY();
+
+        // 坐标映射
+        QJsonObject data;
+        data["lx"] = -left_y;         // 左摇杆上下 -> X
+        data["ly"] = left_x;          // 左摇杆左右 -> Y
+        data["lz"] = current_joy_z_;  // 扳机 -> Z
+        
+        data["ax"] = right_x;         // 右摇杆左右 -> 摇头 Roll
+        data["ay"] = -right_y;        // 右摇杆上下 -> 点头 Pitch
+        data["az"] = 0.0;             // 原代码中 Z轴旋转暂未映射
+
+        rosWorker->sendCommand("joy", "DATA", data);
+    });
+
 }
 
 MainWindow::~MainWindow()
@@ -130,7 +196,26 @@ void MainWindow::onCartesianButtonClicked()
     qDebug() << "目标姿态: (" << roll << "," << pitch << "," << yaw << ")";
     
     ui->statusbar->showMessage("执行笛卡尔直线路径规划...", 2000);
+    ui->recognitionResultLabel->setStyleSheet("color: white;");
     ui->recognitionResultLabel->setText(QString("正在移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
+
+    ui->cartesianButton->setEnabled(false); // 规划过程中禁用按钮，防止重复点击
+    ui->ptpButton->setEnabled(false);
+
+    if (joyTimer->isActive()) {
+        ui->joystickEnableCheckBox->setChecked(false); // 规划时禁用手柄控制
+        ui->joystickEnableCheckBox->setEnabled(false);
+        joyTimer->stop();
+    }
+
+    rosWorker->sendCommand("pose", "MOVE_LINEAR", {
+        {"x", x},
+        {"y", y},
+        {"z", z},
+        {"roll", roll},
+        {"pitch", pitch},
+        {"yaw", yaw}
+    });
 }
 
 void MainWindow::onPtpButtonClicked()
@@ -154,7 +239,26 @@ void MainWindow::onPtpButtonClicked()
     qDebug() << "目标姿态: (" << roll << "," << pitch << "," << yaw << ")";
     
     ui->statusbar->showMessage("执行关节空间路径规划...", 2000);
-    ui->recognitionResultLabel->setText(QString("正在PTP移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
+    ui->recognitionResultLabel->setStyleSheet("color: white;");
+    ui->recognitionResultLabel->setText(QString("正在PTP移动到 (%1, %2, %3, %4, %5, %6)...").arg(x).arg(y).arg(z).arg(roll).arg(pitch).arg(yaw));
+
+    ui->cartesianButton->setEnabled(false); // 规划过程中禁用按钮，防止重复点击
+    ui->ptpButton->setEnabled(false);
+
+    if (joyTimer->isActive()) {
+        ui->joystickEnableCheckBox->setChecked(false); // 规划时禁用手柄控制
+        ui->joystickEnableCheckBox->setEnabled(false);
+        joyTimer->stop();
+    }
+
+    rosWorker->sendCommand("pose", "MOVE_PTP", {
+        {"x", x},
+        {"y", y},
+        {"z", z},
+        {"roll", roll},
+        {"pitch", pitch},
+        {"yaw", yaw}
+    });
 }
 
 // 手柄控制槽函数
@@ -162,31 +266,43 @@ void MainWindow::onJoystickEnableCheckBoxClicked(bool checked)
 {
     qDebug() << "手柄激活状态: " << checked;
     ui->statusbar->showMessage(checked ? "手柄已激活" : "手柄已禁用", 2000);
-    ui->controlStatusLabel->setText(checked ? "手柄操作状态: 已激活" : "手柄操作状态: 就绪");
+    ui->joyStatusLabel->setText(checked ? "已激活" : "就绪");
+
+    if (checked) {
+        joyTimer->start();
+        // 发送启动命令
+        rosWorker->sendCommand("joy", "START_JOY", {});
+    } else {
+        joyTimer->stop();
+    }
 }
 
 void MainWindow::onZForwardButtonPressed()
 {
     qDebug() << "前进 (LT) 按钮按下";
     ui->statusbar->showMessage("Z轴前进...", 1000);
+    current_joy_z_ = 1.0f; // 模拟 LT 扳机被按下
 }
 
 void MainWindow::onZForwardButtonReleased()
 {
     qDebug() << "前进 (LT) 按钮释放";
     ui->statusbar->showMessage("Z轴停止", 1000);
+    current_joy_z_ = 0.0f; // 模拟 LT 扳机被释放
 }
 
 void MainWindow::onZBackwardButtonPressed()
 {
     qDebug() << "后退 (RT) 按钮按下";
     ui->statusbar->showMessage("Z轴后退...", 1000);
+    current_joy_z_ = -1.0f; // 模拟 RT 扳机被按下
 }
 
 void MainWindow::onZBackwardButtonReleased()
 {
     qDebug() << "后退 (RT) 按钮释放";
     ui->statusbar->showMessage("Z轴停止", 1000);
+    current_joy_z_ = 0.0f; // 模拟 RT 扳机被释放
 }
 
 // 视觉识别槽函数
@@ -254,12 +370,20 @@ void MainWindow::onSpeedSliderValueChanged(int value)
 {
     qDebug() << "速度限制调整为: " << value;
     ui->statusbar->showMessage(QString("速度限制: %1%").arg(value), 1000);
+
+    rosWorker->sendCommand("joy_param", "SET_SPEED_LIMIT", {
+        {"value", value}
+    });
 }
 
 void MainWindow::onSensitivitySliderValueChanged(int value)
 {
     qDebug() << "灵敏度调整为: " << value;
     ui->statusbar->showMessage(QString("灵敏度: %1%").arg(value), 1000);
+
+    rosWorker->sendCommand("joy_param", "SET_SENSITIVITY", {
+        {"value", value}
+    });
 }
 
 // 安全设置槽函数
@@ -277,8 +401,8 @@ void MainWindow::onEmergencyButtonClicked()
     if (reply == QMessageBox::Yes) {
         qDebug() << "紧急停止按钮点击";
         ui->statusbar->showMessage("紧急停止已激活", 5000);
-        ui->controlStatusLabel->setText("手柄操作状态: 紧急停止");
-        ui->systemStatusLabel->setText("系统状态: 紧急停止");
+        ui->joyStatusLabel->setText("紧急停止");
+        ui->systemStatusLabel->setText("紧急停止");
         
         // 禁用手柄控制
         ui->joystickEnableCheckBox->setChecked(false);
@@ -360,18 +484,6 @@ void MainWindow::onCameraSourceComboBoxCurrentIndexChanged(int index)
     ui->statusbar->showMessage(QString("相机源: %1").arg(source), 1000);
 }
 
-// 状态更新槽函数
-void MainWindow::updateStatusBar()
-{
-    // 模拟控制状态更新
-    static QString statuses[] = {"就绪", "运行中", "接近奇异点", "碰撞警告"};
-    static int statusIndex = 0;
-    
-    if (ui->joystickEnableCheckBox->isChecked()) {
-        statusIndex = (statusIndex + 1) % 4;
-        ui->controlStatusLabel->setText(QString("手柄操作状态: %1").arg(statuses[statusIndex]));
-    }
-}
 
 // 应用深色主题样式表
 void MainWindow::applyDarkTheme()
@@ -443,6 +555,8 @@ void MainWindow::applyDarkTheme()
         
         QLabel {
             color: #E0E0E0;
+            background-color: transparent;
+            border: none;
         }
         
         QSlider::groove:horizontal {
@@ -464,6 +578,8 @@ void MainWindow::applyDarkTheme()
         
         QCheckBox {
             spacing: 8px;
+            background-color: transparent;
+            border: none;
         }
         
         QCheckBox::indicator {

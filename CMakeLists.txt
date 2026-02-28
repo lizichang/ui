@@ -8,9 +8,14 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
 
 set(TS_FILES uirobot_zh_CN.ts)
 
@@ -20,6 +25,10 @@ set(PROJECT_SOURCES
         mainwindow.h
         mainwindow.ui
         resources.qrc
+        RosWorker.cpp
+        RosWorker.h
+        AnalogStick.cpp
+        AnalogStick.h
         ${TS_FILES}
 )
 
@@ -50,7 +59,22 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(uirobot PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# link against Qt and the ROS2 client libraries
+# the modern CMake targets provide include dirs automatically
+# so you usually don't need to add include_directories manually.
+target_include_directories(uirobot PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(uirobot
+    Qt${QT_VERSION_MAJOR}::Widgets
+)
+
+# ROS2 libraries
+ament_target_dependencies(uirobot
+    rclcpp
+    std_msgs
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

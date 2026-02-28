@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include "RosWorker.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -55,9 +56,6 @@ private slots:
     void onCaptureButtonClicked();
     void onRecordButtonClicked();
     void onCameraSourceComboBoxCurrentIndexChanged(int index);
-    
-    // 状态更新
-    void updateStatusBar();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -65,6 +63,13 @@ protected:
 private:
     Ui::MainWindow *ui;
     QLabel *controlStatusLabel;
+
+    // ROS 后台线程
+    RosWorker *rosWorker;
+
+    // 虚拟手柄定时器
+    QTimer *joyTimer;
+    float current_joy_z_ = 0.0f; // 记录 LT/RT 扳机的值
     
     // 辅助函数
     void applyDarkTheme();
