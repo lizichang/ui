@@ -454,6 +454,13 @@
             </item>
            </layout>
           </item>
+          <item>
+           <widget class="QLabel" name="operationResultLabel">
+            <property name="text">
+             <string>操作结果: 就绪</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
