@@ -2,10 +2,8 @@
 #include "./ui_mainwindow.h"
 #include <QDebug>
 #include <QTimer>
-#include <QLabel>
 #include <QMessageBox>
 #include <QDoubleValidator>
-#include <QIntValidator>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,9 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 设置输入验证
     setupInputValidation();
     
-    // 初始化控制状态栏
-    controlStatusLabel = new QLabel("手柄操作状态: 就绪");
-    ui->statusbar->addPermanentWidget(controlStatusLabel);
+
     
     // 连接信号槽
     // 模式切换
@@ -108,53 +104,51 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-// 位置姿态控制槽函数
-void MainWindow::onCartesianButtonClicked()
+// 辅助函数：验证位置姿态输入
+bool MainWindow::validateInput(double &x, double &y, double &z, double &roll, double &pitch, double &yaw)
 {
-    // 验证输入
     bool ok;
-    double x = ui->xLineEdit->text().toDouble(&ok);
-    double y = ui->yLineEdit->text().toDouble(&ok);
-    double z = ui->zLineEdit->text().toDouble(&ok);
-    double roll = ui->rollLineEdit->text().toDouble(&ok);
-    double pitch = ui->pitchLineEdit->text().toDouble(&ok);
-    double yaw = ui->yawLineEdit->text().toDouble(&ok);
+    x = ui->xLineEdit->text().toDouble(&ok);
+    y = ui->yLineEdit->text().toDouble(&ok);
+    z = ui->zLineEdit->text().toDouble(&ok);
+    roll = ui->rollLineEdit->text().toDouble(&ok);
+    pitch = ui->pitchLineEdit->text().toDouble(&ok);
+    yaw = ui->yawLineEdit->text().toDouble(&ok);
     
     if (!ok) {
         QMessageBox::warning(this, "输入错误", "请输入有效的数值！");
-        return;
+        return false;
     }
+    return true;
+}
+
+// 位置姿态控制槽函数
+void MainWindow::onCartesianButtonClicked()
+{
+    double x, y, z, roll, pitch, yaw;
+    if (!validateInput(x, y, z, roll, pitch, yaw))
+        return;
     
     qDebug() << "直线运动 (Cartesian) 按钮点击";
     qDebug() << "目标位置: (" << x << "," << y << "," << z << ")";
     qDebug() << "目标姿态: (" << roll << "," << pitch << "," << yaw << ")";
     
     ui->statusbar->showMessage("执行笛卡尔直线路径规划...", 2000);
-    ui->recognitionResultLabel->setText(QString("正在移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
+    ui->operationResultLabel->setText(QString("正在移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
 }
 
 void MainWindow::onPtpButtonClicked()
 {
-    // 验证输入
-    bool ok;
-    double x = ui->xLineEdit->text().toDouble(&ok);
-    double y = ui->yLineEdit->text().toDouble(&ok);
-    double z = ui->zLineEdit->text().toDouble(&ok);
-    double roll = ui->rollLineEdit->text().toDouble(&ok);
-    double pitch = ui->pitchLineEdit->text().toDouble(&ok);
-    double yaw = ui->yawLineEdit->text().toDouble(&ok);
-    
-    if (!ok) {
-        QMessageBox::warning(this, "输入错误", "请输入有效的数值！");
+    double x, y, z, roll, pitch, yaw;
+    if (!validateInput(x, y, z, roll, pitch, yaw))
         return;
-    }
     
     qDebug() << "关节规划 (PTP) 按钮点击";
     qDebug() << "目标位置: (" << x << "," << y << "," << z << ")";
     qDebug() << "目标姿态: (" << roll << "," << pitch << "," << yaw << ")";
     
     ui->statusbar->showMessage("执行关节空间路径规划...", 2000);
-    ui->recognitionResultLabel->setText(QString("正在PTP移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
+    ui->operationResultLabel->setText(QString("正在PTP移动到 (%1, %2, %3)...").arg(x).arg(y).arg(z));
 }
 
 // 手柄控制槽函数
@@ -212,41 +206,36 @@ void MainWindow::onAlignButtonClicked()
     });
 }
 
-// 模式切换槽函数
-void MainWindow::onManualModeButtonClicked()
+// 辅助函数：切换模式
+void MainWindow::switchMode(QPushButton *activeButton, const QString &modeName)
 {
-    // 确保只有手动模式被选中
-    ui->manualModeButton->setChecked(true);
+    // 重置所有模式按钮
+    ui->manualModeButton->setChecked(false);
     ui->autoModeButton->setChecked(false);
     ui->semiautoModeButton->setChecked(false);
     
-    qDebug() << "切换到手动模式";
-    ui->statusbar->showMessage("切换到手动模式", 2000);
-    ui->systemStatusLabel->setText("系统状态: 手动模式");
+    // 激活当前按钮
+    activeButton->setChecked(true);
+    
+    qDebug() << "切换到" << modeName << "模式";
+    ui->statusbar->showMessage("切换到" + modeName + "模式", 2000);
+    ui->systemStatusLabel->setText("系统状态: " + modeName + "模式");
+}
+
+// 模式切换槽函数
+void MainWindow::onManualModeButtonClicked()
+{
+    switchMode(ui->manualModeButton, "手动");
 }
 
 void MainWindow::onAutoModeButtonClicked()
 {
-    // 确保只有自动模式被选中
-    ui->manualModeButton->setChecked(false);
-    ui->autoModeButton->setChecked(true);
-    ui->semiautoModeButton->setChecked(false);
-    
-    qDebug() << "切换到自动模式";
-    ui->statusbar->showMessage("切换到自动模式", 2000);
-    ui->systemStatusLabel->setText("系统状态: 自动模式");
+    switchMode(ui->autoModeButton, "自动");
 }
 
 void MainWindow::onSemiautoModeButtonClicked()
 {
-    // 确保只有半自动模式被选中
-    ui->manualModeButton->setChecked(false);
-    ui->autoModeButton->setChecked(false);
-    ui->semiautoModeButton->setChecked(true);
-    
-    qDebug() << "切换到半自动模式";
-    ui->statusbar->showMessage("切换到半自动模式", 2000);
-    ui->systemStatusLabel->setText("系统状态: 半自动模式");
+    switchMode(ui->semiautoModeButton, "半自动");
 }
 
 // 参数调节槽函数

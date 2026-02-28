@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -64,11 +63,12 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    QLabel *controlStatusLabel;
     
     // 辅助函数
     void applyDarkTheme();
     void setupTooltips();
     void setupInputValidation();
+    bool validateInput(double &x, double &y, double &z, double &roll, double &pitch, double &yaw);
+    void switchMode(QPushButton *activeButton, const QString &modeName);
 };
 #endif // MAINWINDOW_H
