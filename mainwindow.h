@@ -78,5 +78,6 @@ private:
     void setupInputValidation();
     bool validateInput(double &x, double &y, double &z, double &roll, double &pitch, double &yaw);
     void switchMode(QPushButton *activeButton, const QString &modeName);
+    void switchRecognitionMode(QPushButton *activeButton, const QString &modeName);
 };
 #endif // MAINWINDOW_H
