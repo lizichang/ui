@@ -15,7 +15,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 set(TS_FILES uirobot_zh_CN.ts)
 
@@ -74,6 +75,8 @@ target_link_libraries(uirobot
 ament_target_dependencies(uirobot
     rclcpp
     std_msgs
+    sensor_msgs
+    cv_bridge
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

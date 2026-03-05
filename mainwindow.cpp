@@ -150,6 +150,21 @@ MainWindow::MainWindow(QWidget *parent)
         rosWorker->sendCommand("joy", "DATA", data);
     });
 
+    // 连接 ROS 图像更新信号到槽函数
+    connect(rosWorker, &RosWorker::imageUpdated, this, [this](const QImage& image) {
+        if (!image.isNull()) {
+            // 使用高质量抗锯齿缩放图像以适应显示区域
+            QPixmap pixmap = QPixmap::fromImage(image);
+            QPixmap scaledPixmap = pixmap.scaled(
+                ui->visionLabel->size(),
+                Qt::KeepAspectRatio,
+                Qt::SmoothTransformation
+            );
+            ui->visionLabel->setPixmap(scaledPixmap);
+            ui->visionLabel->setAlignment(Qt::AlignCenter);
+        }
+    });
+
 }
 
 MainWindow::~MainWindow()
@@ -454,15 +469,17 @@ void MainWindow::onObjectRecognitionButtonClicked()
 void MainWindow::onPrevTargetButtonClicked()
 {
     qDebug() << "上一个目标按钮点击";
-    ui->statusbar->showMessage("选择上一个目标", 1000);
-    ui->targetIndexLabel->setText("目标 1/3");
+    rosWorker->sendCommand("vision", "SELECT_PREV", {});
+    // ui->statusbar->showMessage("选择上一个目标", 1000);
+    // ui->targetIndexLabel->setText("目标 1/3");
 }
 
 void MainWindow::onNextTargetButtonClicked()
 {
     qDebug() << "下一个目标按钮点击";
-    ui->statusbar->showMessage("选择下一个目标", 1000);
-    ui->targetIndexLabel->setText("目标 2/3");
+    rosWorker->sendCommand("vision", "SELECT_NEXT", {});
+    // ui->statusbar->showMessage("选择下一个目标", 1000);
+    // ui->targetIndexLabel->setText("目标 2/3");
 }
 
 void MainWindow::onCaptureButtonClicked()

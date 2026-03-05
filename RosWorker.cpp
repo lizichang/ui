@@ -32,6 +32,19 @@ RosWorker::RosWorker(QObject *parent) : QThread(parent)
                 emit statusUpdated(target, msg, code);
             }
         });
+    // 创建订阅者 (接收后端图像更新)
+    sub_image_ = node_->create_subscription<sensor_msgs::msg::Image>(
+        "/vision/output_image", 10, 
+        [this](const sensor_msgs::msg::Image::ConstSharedPtr msg) {
+            try {
+                cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "rgb8");
+                QImage image(cv_ptr->image.data, cv_ptr->image.cols, cv_ptr->image.rows, static_cast<int>(cv_ptr->image.step), QImage::Format_RGB888);
+                
+                emit imageUpdated(image.copy());
+            } catch (cv_bridge::Exception& e) {
+                qWarning() << "cv_bridge exception: " << e.what();
+            }
+        });
 
     qDebug() << "ROS Worker initialized";
 }
